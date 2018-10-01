@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config({ })
+
 export enum BuildType {
     Production = 'prod',
     Development = 'dev',
@@ -14,6 +17,8 @@ function getBuildType(env: NodeJS.ProcessEnv) {
 
 export const config = {
     buildType: getBuildType(process.env),
+    hubHeader: process.env.HUB_HEADER,
+    hubSecret: process.env.HUB_SECRET,
     port: process.env.PORT || 7331,
     prettyPrint: true,
 }

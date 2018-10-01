@@ -1,6 +1,4 @@
-
 import Koa from 'koa'
-
 import bodyParser from 'koa-bodyparser'
 import { config } from './config'
 import { logger } from './logger'

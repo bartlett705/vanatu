@@ -13,7 +13,7 @@ pids
 
 node_modules/
 .npm
-config.js
+.env
 
 # Builds
 build
