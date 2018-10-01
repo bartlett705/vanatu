@@ -24,7 +24,7 @@
   },
   "scripts": {
     "test": "jest",
-    "start": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.test.ts' --exec 'ts-node' src/index.ts"
+    "start": "npm i && nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.test.ts' --exec 'ts-node' src/index.ts"
   },
   "repository": {
     "type": "git",
