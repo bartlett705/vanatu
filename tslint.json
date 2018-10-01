@@ -1,0 +1,18 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {
+        "semicolon": [true, "never"],
+        "quotemark": [true, "single", "avoid-escape", "avoid-template", "jsx-double"]
+    },
+    "rules": {
+        "interface-name": [true, "never-prefix"],
+        "max-classes-per-file": false,
+        "no-console": false,
+        "semicolon": [true, "never"],
+        "quotemark": [true, "single", "avoid-escape", "avoid-template", "jsx-double"]
+    },
+    "rulesDirectory": []
+}
