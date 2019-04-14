@@ -24,8 +24,8 @@ export const config = {
     buildType,
     hubHeader: process.env.HUB_HEADER,
     hubSecret: process.env.HUB_SECRET,
-    logLevel: process.env.LOG_LEVEL || (isProduction ? 0 : 4),
-    port: process.env.PORT || (isProduction ? 7409 : 7410),
+    logLevel: Number(process.env.LOG_LEVEL) || (isProduction ? 0 : 4),
+    port: Number(process.env.PORT) || (isProduction ? 7409 : 7410),
     prettyPrint: !isProduction,
     sshURLs: JSON.parse(process.env.SSH_URLS)
 }

@@ -5,11 +5,12 @@
   "main": "src/index.ts",
   "dependencies": {
     "dotenv": "^7.0.0",
+    "event-stream": ">=4.0.0",
+    "forever": "^1.0.0",
     "koa": "^2.5.3",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
-    "nodemon": "^1.18.4",
-    "event-stream": ">=4.0.0"
+    "nodemon": "^1.18.4"
   },
   "devDependencies": {
     "@types/dotenv": "^4.0.3",

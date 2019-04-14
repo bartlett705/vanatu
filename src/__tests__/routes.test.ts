@@ -45,7 +45,7 @@ beforeEach(() => {
 afterEach(() => server.close());
 const setup = () => {
   const app = new Koa();
-  const logger = new Logger(0);
+  const logger = new Logger(4);
   app.use(bodyParser({ onerror: err => console.error(err) }));
   // @ts-ignore
   app.use(createRoutes(logger, mockFS));
@@ -56,12 +56,12 @@ const setup = () => {
 
 const mockPayload = (overrides?: any) => ({
   action: "completed",
-  repository: "charcoal-client",
+  repository: "undefined",
   ...overrides,
 });
 
 describe("On Check webhook", () => {
-  it("403s a bad webhook signature and does not process anything", async () => {
+  fit("403s a bad webhook signature and does not process anything", async () => {
     const { req } = setup();
     await req
       .post("/")
