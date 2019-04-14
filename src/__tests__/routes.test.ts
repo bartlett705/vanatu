@@ -55,12 +55,9 @@ const setup = () => {
 };
 
 const mockPayload = (overrides?: any) => ({
-  action: "completed", check_suite: { conclusion: "success" },
-  repository: {
-    ssh_url: "git+ssh+stuff",
-    name: "charcoal-client",
-    ...overrides
-  }
+  action: "completed",
+  repository: "charcoal-client",
+  ...overrides,
 });
 
 describe("On Check webhook", () => {
@@ -90,7 +87,7 @@ describe("On Check webhook", () => {
     const { req } = setup();
     await req
       .post("/")
-      .set("X-Hub-Signature", "sha1=4a62263fd694a1b58e44ad2e7b9cb73bbe5d5da7")
+      .set("X-Hub-Signature", "sha1=99ea7190d769cb732fa4d1274e3802c0e7948ee9")
       .send(mockPayload())
       .expect(200);
 
@@ -139,8 +136,8 @@ describe("On Check webhook", () => {
     const { req } = setup();
     await req
       .post("/")
-      .set("X-Hub-Signature", "sha1=c7ddbb88fbef67524410ff0b5598c06b979674ff")
-      .send(mockPayload({ name: "existing" }))
+      .set("X-Hub-Signature", "sha1=47f1acb141ddbdeb81c474923e571dfccab7c56c")
+      .send(mockPayload({ repository: "existing" }))
       .expect(200);
 
     expect(chdirSpy).toHaveBeenCalledWith("/test/vanatu/existing");

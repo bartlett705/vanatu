@@ -38,15 +38,14 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
       return;
     }
 
-    const sshURL = payload.repository.ssh_url;
-    const name = payload.repository.name;
-    logger.debug("Going to update ", name, " from ", sshURL);
+    const name = payload.repository;
+    logger.debug("Going to update ", name, " from ", config.sshURLs[name]);
     let child: ChildProcess;
 
     const targetDir = path.join(config.baseContentDir, name);
     if (!fileSystem.existsSync(targetDir)) {
       logger.debug("target not found in vanatu; cloning into", targetDir);
-      child = spawn("git", ["clone", sshURL, targetDir], { stdio: "inherit" });
+      child = spawn("git", ["clone", config.sshURLs[name], targetDir], { stdio: "inherit" });
     } else {
       logger.debug(
         "target found in vanatu; pulling latest master in ",

@@ -27,4 +27,5 @@ export const config = {
     logLevel: process.env.LOG_LEVEL || (isProduction ? 0 : 4),
     port: process.env.PORT || (isProduction ? 7409 : 7410),
     prettyPrint: !isProduction,
+    sshURLs: JSON.parse(process.env.SSH_URLS)
 }
