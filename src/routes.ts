@@ -66,6 +66,7 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
       return;
     }
 
+    process.chdir(targetDir);
     logger.info("Repo Updated. Running install step.");
 
     const installChild = spawn("npm", ["ci"], { stdio: "inherit" })

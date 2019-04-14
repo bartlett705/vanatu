@@ -45,7 +45,7 @@ beforeEach(() => {
 afterEach(() => server.close());
 const setup = () => {
   const app = new Koa();
-  const logger = new Logger(4);
+  const logger = new Logger(0);
   app.use(bodyParser({ onerror: err => console.error(err) }));
   // @ts-ignore
   app.use(createRoutes(logger, mockFS));
@@ -56,12 +56,12 @@ const setup = () => {
 
 const mockPayload = (overrides?: any) => ({
   action: "completed",
-  repository: "undefined",
+  repository: "charcoal-client",
   ...overrides,
 });
 
 describe("On Check webhook", () => {
-  fit("403s a bad webhook signature and does not process anything", async () => {
+  it("403s a bad webhook signature and does not process anything", async () => {
     const { req } = setup();
     await req
       .post("/")
@@ -84,6 +84,7 @@ describe("On Check webhook", () => {
   });
 
   it("clones a repo it has not seen before", async () => {
+    const chdirSpy = jest.spyOn(process, "chdir").mockImplementation();
     const { req } = setup();
     await req
       .post("/")
@@ -106,6 +107,8 @@ describe("On Check webhook", () => {
               },
             ]
         `);
+    expect(chdirSpy).toHaveBeenCalledTimes(1)
+    expect(chdirSpy).toHaveBeenCalledWith('/test/vanatu/charcoal-client')
     expect(mockSpawn.mock.calls[1]).toMatchInlineSnapshot(`
             Array [
               "npm",
@@ -133,6 +136,7 @@ describe("On Check webhook", () => {
 
   it("clones a repo it has not seen before", async () => {
     const chdirSpy = jest.spyOn(process, "chdir").mockImplementation();
+    chdirSpy.mockClear();
     const { req } = setup();
     await req
       .post("/")
@@ -141,6 +145,7 @@ describe("On Check webhook", () => {
       .expect(200);
 
     expect(chdirSpy).toHaveBeenCalledWith("/test/vanatu/existing");
+    expect(chdirSpy).toHaveBeenCalledTimes(2)
     expect(mockSpawn).toHaveBeenCalledTimes(3);
 
     expect(mockSpawn.mock.calls[0]).toMatchInlineSnapshot(`
