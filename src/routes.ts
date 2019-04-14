@@ -38,12 +38,6 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
       return;
     }
 
-    if (!payload.check_suite || payload.check_suite.conclusion !== 'success') {
-      logger.info('Received non-actionable check_suite conclusion: ', payload.check_suite && payload.check_suite.conclusion)
-      ctx.status = 200;
-      return;
-    }
-
     const sshURL = payload.repository.ssh_url;
     const name = payload.repository.name;
     logger.debug("Going to update ", name, " from ", sshURL);
