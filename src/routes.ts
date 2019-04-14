@@ -37,59 +37,10 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
       ctx.status = 200;
       return;
     }
-
-    const name = payload.repository;
-    logger.debug("Going to update ", name, " from ", config.sshURLs[name]);
-    let child: ChildProcess;
-
-    const targetDir = path.join(config.baseContentDir, name);
-    if (!fileSystem.existsSync(targetDir)) {
-      logger.debug("target not found in vanatu; cloning into", targetDir);
-      child = spawn("git", ["clone", config.sshURLs[name], targetDir], { stdio: "inherit" });
-    } else {
-      logger.debug(
-        "target found in vanatu; pulling latest master in ",
-        targetDir
-      );
-
-      process.chdir(targetDir);
-      child = spawn("git", ["pull"], { stdio: "inherit" })
-    }
-
-    logger.debug("Awaiting child process.");
-
-    try {
-      await promisify(child);
-    } catch (err) {
-      logger.error("failed to update repo.", err)
-      ctx.status = 500;
-      return;
-    }
-
-    process.chdir(targetDir);
-    logger.info("Repo Updated. Running install step.");
-
-    const installChild = spawn("npm", ["ci"], { stdio: "inherit" })
-    try {
-      await promisify(installChild);
-    } catch (err) {
-      logger.error("failed to run install step.", err)
-
-      ctx.status = 500;
-      return;
-    }
-
-    logger.info("Install completed. Running build step.");
-
-    const buildChild = spawn("npm", ["run", "build:vanatu"], { stdio: "inherit" })
-    try {
-      await promisify(buildChild);
-    } catch (err) {
-      logger.error("failed to run build step.", err)
-
-      ctx.status = 500;
-      return;
-    }
+    
+    processPayload(logger, payload, fileSystem)
+    ctx.status = 200;
+    return;
   });
 
   return router.routes();
@@ -106,3 +57,53 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
       });
     });
   }
+
+async function processPayload(logger: Logger, payload: any, fileSystem: typeof fs) {
+  const name = payload.repository;
+  logger.debug("Going to update ", name, " from ", config.sshURLs[name]);
+  let child: ChildProcess;
+
+  const targetDir = path.join(config.baseContentDir, name);
+  if (!fileSystem.existsSync(targetDir)) {
+    logger.debug("target not found in vanatu; cloning into", targetDir);
+    child = spawn("git", ["clone", config.sshURLs[name], targetDir], { stdio: "inherit" });
+  } else {
+    logger.debug(
+      "target found in vanatu; pulling latest master in ",
+      targetDir
+    );
+
+    process.chdir(targetDir);
+    child = spawn("git", ["pull"], { stdio: "inherit" })
+  }
+
+  logger.debug("Awaiting child process.");
+
+  try {
+    await promisify(child);
+  } catch (err) {
+    logger.error("failed to update repo.", err)
+    return;
+  }
+
+  process.chdir(targetDir);
+  logger.info("Repo Updated. Running install step.");
+
+  const installChild = spawn("npm", ["ci"], { stdio: "inherit" })
+  try {
+    await promisify(installChild);
+  } catch (err) {
+    logger.error("failed to run install step.", err)
+    return;
+  }
+
+  logger.info("Install completed. Running build step.");
+
+  const buildChild = spawn("npm", ["run", "build:vanatu"], { stdio: "inherit" })
+  try {
+    await promisify(buildChild);
+  } catch (err) {
+    logger.error("failed to run build step.", err)
+    return;
+  }
+} 
