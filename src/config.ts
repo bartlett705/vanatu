@@ -24,7 +24,7 @@ export const config = {
     buildType,
     hubHeader: process.env.HUB_HEADER,
     hubSecret: process.env.HUB_SECRET,
-    logLevel: isProduction ? 1 : 4,
+    logLevel: process.env.LOG_LEVEL || (isProduction ? 0 : 4),
     port: process.env.PORT || (isProduction ? 7409 : 7410),
     prettyPrint: !isProduction,
 }

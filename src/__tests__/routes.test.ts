@@ -55,6 +55,7 @@ const setup = () => {
 };
 
 const mockPayload = (overrides?: any) => ({
+  action: "completed", check_suite: { conclusion: "success" },
   repository: {
     ssh_url: "git+ssh+stuff",
     name: "charcoal-client",
@@ -74,11 +75,33 @@ describe("On Check webhook", () => {
     expect(mockSpawn).not.toHaveBeenCalled();
   });
 
+  it("does nothing if the payload is not a check_suite completed", async () => {
+    const { req } = setup();
+    await req
+      .post("/")
+      .set("X-Hub-Signature", "sha1=a52ac91f6d24624d4925afe4afbe2c607fa35a5a")
+      .send({ action: "requested" })
+      .expect(200);
+
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it("does nothing if the check_suite conclusion is not success", async () => {
+    const { req } = setup();
+    await req
+      .post("/")
+      .set("X-Hub-Signature", "sha1=40eef7be5b060eb5449e572dc80c3cf49831d9fa")
+      .send({ action: "completed", check_suite: { conclusion: "failure" } })
+      .expect(200);
+
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
   it("clones a repo it has not seen before", async () => {
     const { req } = setup();
     await req
       .post("/")
-      .set("X-Hub-Signature", "sha1=aaca8a96a9ca75ae8f53486f0108d48587e3fb74")
+      .set("X-Hub-Signature", "sha1=4a62263fd694a1b58e44ad2e7b9cb73bbe5d5da7")
       .send(mockPayload())
       .expect(200);
 
@@ -127,7 +150,7 @@ describe("On Check webhook", () => {
     const { req } = setup();
     await req
       .post("/")
-      .set("X-Hub-Signature", "sha1=adaaed45db19343cba39aaad52eff3e897baaa6b")
+      .set("X-Hub-Signature", "sha1=c7ddbb88fbef67524410ff0b5598c06b979674ff")
       .send(mockPayload({ name: "existing" }))
       .expect(200);
 

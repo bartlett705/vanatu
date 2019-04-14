@@ -12,10 +12,10 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
   const router = new Router();
 
   router.post("/", async (ctx: Koa.Context) => {
-    const payload = JSON.stringify(ctx.request.body);
+    const rawBody = JSON.stringify(ctx.request.body);
 
     const hmac = crypto.createHmac("sha1", config.hubSecret);
-    const computedSignature = "sha1=" + hmac.update(payload).digest("hex");
+    const computedSignature = "sha1=" + hmac.update(rawBody).digest("hex");
     const receivedSignature = ctx.request.headers[config.hubHeader];
     logger.debug("computed:", computedSignature);
     logger.debug("received:", receivedSignature);
@@ -30,8 +30,22 @@ export const createRoutes = (logger: Logger, fileSystem = fs) => {
     logger.info("Checksum confirmed 👍");
     ctx.status = 200;
 
-    const sshURL = (ctx.request.body as any).repository.ssh_url;
-    const name = (ctx.request.body as any).repository.name;
+    const payload: any = ctx.request.body as any
+    // Ensure this is a payload we want to handle - namely succesful check_suites
+    if (payload.action !== "completed") {
+      logger.info('Received non-actionable payload: ', payload.action)
+      ctx.status = 200;
+      return;
+    }
+
+    if (!payload.check_suite || payload.check_suite.conclusion !== 'success') {
+      logger.info('Received non-actionable check_suite conclusion: ', payload.check_suite && payload.check_suite.conclusion)
+      ctx.status = 200;
+      return;
+    }
+
+    const sshURL = payload.repository.ssh_url;
+    const name = payload.repository.name;
     logger.debug("Going to update ", name, " from ", sshURL);
     let child: ChildProcess;
 
