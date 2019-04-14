@@ -1,15 +1,19 @@
+import dotenv from 'dotenv'
+dotenv.config({ })
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import { config } from './config'
-import { logger } from './logger'
-import { routes } from './routes'
+import { requestLoggerMiddleware, Logger } from './logger'
+import { createRoutes } from './routes'
+import * as fs from 'fs';
 
 const app = new Koa()
-
-app.use(logger)
+const logger = new Logger(config.logLevel)
+app.use(requestLoggerMiddleware(logger))
 app.use(bodyParser())
-app.use(routes)
+app.use(createRoutes(logger, fs))
 
 app.listen(config.port)
-
-console.log(`Vanatu running on port ${config.port}`)
+logger.info(`Vanatu running on port ${config.port}`)
+logger.info(`Working Directory: ${config.baseContentDir}`)
+logger.info('Current Contents:', fs.readdirSync(config.baseContentDir))

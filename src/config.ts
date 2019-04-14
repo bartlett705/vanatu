@@ -1,6 +1,3 @@
-import dotenv from 'dotenv'
-dotenv.config({ })
-
 export enum BuildType {
     Production = 'prod',
     Development = 'dev',
@@ -8,17 +5,26 @@ export enum BuildType {
 }
 
 function getBuildType(env: NodeJS.ProcessEnv) {
-   switch (env.buildType) {
+   switch (env.BUILD_TYPE) {
        case 'prod' : return BuildType.Production
        case 'dev': return BuildType.Development
        case 'test': return BuildType.Test
    }
 }
 
+const buildType = getBuildType(process.env)
+const isProduction = buildType === BuildType.Production
+
+if (!process.env.HUB_HEADER || !process.env.HUB_SECRET) {
+    throw new Error("Hub signature info missing!")
+}
+
 export const config = {
-    buildType: getBuildType(process.env),
+    baseContentDir: process.env.BASE_CONTENT_DIR,
+    buildType,
     hubHeader: process.env.HUB_HEADER,
     hubSecret: process.env.HUB_SECRET,
-    port: process.env.PORT || 7331,
-    prettyPrint: true,
+    logLevel: isProduction ? 1 : 4,
+    port: process.env.PORT || (isProduction ? 7409 : 7410),
+    prettyPrint: !isProduction,
 }

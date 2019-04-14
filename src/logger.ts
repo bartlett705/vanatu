@@ -1,64 +1,97 @@
+import chalk from 'chalk'
 import Koa from 'koa'
 import { config } from './config'
 
 interface LogData {
-    method: string
-    url: string
-    query: string
-    remoteAddress: string
-    host: string
-    userAgent: string
-    statusCode: number
-    errorMessage: string
-    errorStack: string
-    data: any
-    responseTime: number
+  data: any
+  errorMessage: string
+  errorStack: string
+  host: string
+  method: string
+  remoteAddress: string[] | string
+  responseTime: number
+  statusCode: number
+  time: string
+  url: string
+  userAgent: string
 }
 
-function outputLog(data: Partial<LogData>, thrownError: any) {
-    if (config.prettyPrint) {
-        console.log(`${data.statusCode} ${data.method} ${data.url} - ${data.responseTime}ms`)
-        if (thrownError) {
-            console.error(thrownError)
-        }
-    } else if (data.statusCode < 400) {
-        process.stdout.write(JSON.stringify(data) + '\n')
-    } else {
-        process.stderr.write(JSON.stringify(data) + '\n')
-    }
+const error = chalk.bold.red
+const warn = chalk.keyword('orange')
+const info = chalk.blueBright
+const debug = chalk.white
+const externalCall = chalk.black.bgGreenBright
+
+const noOp = (): void => undefined
+
+export class Logger {
+  public error: (...args: any) => void
+  public warn: (...args: any) => void
+  public info: (...args: any) => void
+  public debug: (...args: any) => void
+  public externalCall: (...args: any) => void
+
+  constructor(logLevel: number) {
+    this.error = (...args: any) => console.log(error(...args))
+    this.warn =
+      logLevel > 0 ? (...args: any) => console.log(warn(...args)) : noOp
+    this.info =
+      logLevel > 1 ? (...args: any) => console.log(info(...args)) : noOp
+    this.debug =
+      logLevel > 2 ? (...args: any) => console.log(debug(...args)) : noOp
+    this.externalCall =
+      logLevel > 2
+        ? (...args: any) => console.log(externalCall(...args))
+        : noOp
+  }
 }
 
-export async function logger(ctx: Koa.Context, next: () => Promise<any>) {
+export const requestLoggerMiddleware = (logger: Logger) => async (
+  ctx: Koa.Context,
+  next: () => Promise<any>
+) => {
+  const start = Date.now()
+  const logData: Partial<LogData> = {
+    method: ctx.method,
+    remoteAddress: ctx.request.ips.length ? ctx.request.ips : ctx.request.ip,
+    time: new Date().toISOString(),
+    url: ctx.url,
+    userAgent: ctx.headers['user-agent']
+  }
 
-    const start = new Date().getMilliseconds()
-
-    const logData: Partial<LogData> = {
-        host: ctx.headers.host,
-        method: ctx.method,
-        query: ctx.query,
-        remoteAddress: ctx.request.ip,
-        url: ctx.url,
-        userAgent: ctx.headers['user-agent'],
+  let errorThrown: any = null
+  try {
+    await next()
+    logData.statusCode = ctx.status
+  } catch (e) {
+    errorThrown = e
+    logData.errorMessage = e.message
+    logData.errorStack = e.stack
+    logData.statusCode = e.status || 500
+    if (e.data) {
+      logData.data = e.data
     }
+  }
 
-    let errorThrown: any = null
-    try {
-        await next()
-        logData.statusCode = ctx.status
-    } catch (e) {
-        errorThrown = e
-        logData.errorMessage = e.message
-        logData.errorStack = e.stack
-        logData.statusCode = e.status || 500
-        if (e.data) {
-            logData.data = e.data
-        }
+  logData.responseTime = Date.now() - start
+  outputLog(logger, logData, errorThrown)
+
+  if (errorThrown) {
+    throw errorThrown
+  }
+}
+
+function outputLog(logger: Logger, data: Partial<LogData>, thrownError: any) {
+  if (config.prettyPrint) {
+    logger.info(
+      `${data.statusCode} ${data.method} ${data.url} - ${data.responseTime}ms`
+    )
+    if (thrownError) {
+      logger.error(thrownError)
     }
-
-    logData.responseTime = new Date().getMilliseconds() - start
-    outputLog(logData, errorThrown)
-
-    if (errorThrown) {
-        throw errorThrown
-    }
+  } else if (data.statusCode < 400) {
+    process.stdout.write(JSON.stringify(data) + '\n')
+  } else {
+    process.stderr.write(JSON.stringify(data) + '\n')
+  }
 }
