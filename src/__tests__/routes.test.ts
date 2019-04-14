@@ -75,23 +75,12 @@ describe("On Check webhook", () => {
     expect(mockSpawn).not.toHaveBeenCalled();
   });
 
-  it("does nothing if the payload is not a check_suite completed", async () => {
+  it("does nothing if the payload is not a completed action", async () => {
     const { req } = setup();
     await req
       .post("/")
       .set("X-Hub-Signature", "sha1=a52ac91f6d24624d4925afe4afbe2c607fa35a5a")
       .send({ action: "requested" })
-      .expect(200);
-
-    expect(mockSpawn).not.toHaveBeenCalled();
-  });
-
-  it("does nothing if the check_suite conclusion is not success", async () => {
-    const { req } = setup();
-    await req
-      .post("/")
-      .set("X-Hub-Signature", "sha1=40eef7be5b060eb5449e572dc80c3cf49831d9fa")
-      .send({ action: "completed", check_suite: { conclusion: "failure" } })
       .expect(200);
 
     expect(mockSpawn).not.toHaveBeenCalled();
