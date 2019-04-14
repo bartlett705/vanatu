@@ -89,7 +89,7 @@ async function processPayload(logger: Logger, payload: any, fileSystem: typeof f
   process.chdir(targetDir);
   logger.info("Repo Updated. Running install step.");
 
-  const installChild = spawn("npm", ["ci"], { stdio: "inherit" })
+  const installChild = spawn("NODE_ENV=production npm", ["ci"], { stdio: "inherit" })
   try {
     await promisify(installChild);
   } catch (err) {
