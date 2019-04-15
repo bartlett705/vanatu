@@ -89,7 +89,7 @@ async function processPayload(logger: Logger, payload: any, fileSystem: typeof f
   process.chdir(targetDir);
   logger.info("Repo Updated. Running install step.");
 
-  const installChild = spawn("NODE_ENV=production npm", ["ci"], { stdio: "inherit" })
+  const installChild = spawn("npm", ["i"], { stdio: "inherit" })
   try {
     await promisify(installChild);
   } catch (err) {
@@ -106,4 +106,6 @@ async function processPayload(logger: Logger, payload: any, fileSystem: typeof f
     logger.error("failed to run build step.", err)
     return;
   }
+
+  logger.info(`${name} build complete!`)
 } 
