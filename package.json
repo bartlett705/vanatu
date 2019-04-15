@@ -2,12 +2,12 @@
   "name": "vanatu",
   "version": "0.0.2",
   "description": "deploy agent for github integration",
-  "main": "src/index.ts",
+  "main": "build/index.js",
   "dependencies": {
     "dotenv": "^7.0.0",
     "event-stream": ">=4.0.0",
     "forever": "^1.0.0",
-    "koa": "^2.5.3",
+    "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
     "nodemon": "^1.18.4"
@@ -26,12 +26,14 @@
     "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "typescript": "^3.1.1"
+    "tslint": "^5.15.0",
+    "typescript": "^3.4.3"
   },
   "scripts": {
     "test": "jest",
-    "start:production": "BUILD_TYPE=prod forever --watch -m 5 -o ../vanatu.prod.log --append -c \"ts-node\" src/index.ts --colors"
+    "build": "tsc",
+    "start:production": "npm i && npm run build && BUILD_TYPE=prod node build/index.js",
+    "start:production:tsnode": "npm i && BUILD_TYPE=prod forever --watch -m 5 -o ../vanatu.prod.log --append -c \"ts-node\" src/index.ts --colors"
   },
   "repository": {
     "type": "git",
